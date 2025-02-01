@@ -5,15 +5,16 @@ import numpy as np
 import pandas as pd
 from sklearn.pipeline import Pipeline
 from sklearn.base import BaseEstimator, TransformerMixin
-from src.exception import CustomException
-from sklearn.compose import ColumnTransformer
 from src.logger import logging
+from src.exception import CustomException
+from src.utils import save_obj
 import joblib
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.ensemble import RandomForestClassifier
-from src.utils import save_obj
+import warnings
+warnings.filterwarnings("ignore", category=FutureWarning, module="sklearn.pipeline")
 
 @dataclass
 class DataTransformationConfig:
@@ -34,7 +35,7 @@ class CustomMapper(BaseEstimator, TransformerMixin):
             data[col] = data[col].map(mapping)
             if data[col].isnull().any():
                 logging.warning(f"Null values found in column {col}")
-                data.fillna({col: -2}, inplace=True)
+        data.fillna({col: -2}, inplace=True)
         return data
 
 class ColumnDropper(BaseEstimator, TransformerMixin):
@@ -74,11 +75,9 @@ class DataImputation(BaseEstimator, TransformerMixin):
     def transform(self, data):
         data = data.copy()
         for feature in data.columns:
-            if len(data[feature].value_counts()) < 5:
-                imputer = IterativeImputer(estimator= RandomForestClassifier(), random_state=0)
-            else:
-                imputer = IterativeImputer(estimator= RandomForestRegressor(), random_state=0)
-            data[feature] = imputer.fit_transform(data[feature].values.reshape(-1,1))
+            estimator = RandomForestClassifier() if len(data[feature].value_counts()) < 5 else RandomForestRegressor()
+            imputer = IterativeImputer(estimator=estimator)
+            data[feature] = imputer.fit_transform(data[feature].values.reshape(-1, 1))
         return data
 
 class DataTransformation:
@@ -97,39 +96,25 @@ class DataTransformation:
             'Dependents': {'0': 0, '1': 1, '2': 2, '3+': 3},
             'Property_Area': {'Rural': 1, 'Semiurban': 2, 'Urban': 3},
             'Credit_History': {1.0: 1, 0.0: -1, np.nan: -1},
+            'Loan_Status': {'Y': 1, 'N': -1}
             }
             
-            columns = [ "Gender", "Married", "Dependents", "Education", "Self_Employed", "Property_Area", "Credit_History", "Loan_Status"]
-    
+            #columns = ["Loan_ID","Gender", "Married", "Dependents", "Education", "Self_Employed", "Property_Area", "Credit_History", "Loan_Status"]
+            encoder_columns = ["Gender", "Married", "Dependents", "Education", "Self_Employed", "Property_Area", "Credit_History"]
+
             pipeline = Pipeline(
                 steps=[
             ('dropper', ColumnDropper(['Loan_ID'])),
             ('mapper', CustomMapper(mappings)),
-            ('encoder', DummyEncoder(columns)),
+            ('encoder', DummyEncoder(encoder_columns)),
             ('imputer', DataImputation())
             ] )
             
-            preprocessor = ColumnTransformer(
-                [
-                    ('pipeline', pipeline)
-                ]
-            )
-            
-            return preprocessor
+            return pipeline
 
         except Exception as e:
             raise CustomException(e,sys)     
   
-    def save_preprocessor(self):
-        """ Saves the preprocessor object """
-        try:
-            os.makedirs(os.path.dirname(self.config.preprocessor_obj_path), exist_ok=True)
-            joblib.dump(self.pipeline, self.config.preprocessor_obj_path)
-            
-            logging.info(f"Preprocessor saved at {self.config.preprocessor_obj_path}")
-                    
-        except Exception as e:
-            raise CustomException(e,sys)
     
     def initiate_data_transformation(self, train_path, test_path):
         try:
@@ -142,10 +127,10 @@ class DataTransformation:
             
             preprocessing_obj = self.get_data_transformer_object()
             
-            target_column_name = "Loan_Status"
+            #target_column_name = "Loan_Status"
             
             logging.info("Fitting preprocessor object")
-            
+
             X_train = preprocessing_obj.fit_transform(train_df)
             X_test = preprocessing_obj.transform(test_df)
             
