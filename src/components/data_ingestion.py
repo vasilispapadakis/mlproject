@@ -28,7 +28,7 @@ class DataIngestion:
     def initiate_data_ingestion(self):
         logging.info("Initiated data ingestion")
         try:
-            df = pd.read_csv('notebook/data/loan-train.csv')
+            df = pd.read_csv('data/loan-train.csv')
             logging.info("Data ingestion completed")
 
             os.makedirs(os.path.dirname(self.ingestion_config.train_data_path),exist_ok=True)
