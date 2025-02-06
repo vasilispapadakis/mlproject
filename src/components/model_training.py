@@ -5,7 +5,7 @@ from src.logger import logging
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 from src.exception import CustomException
-import joblib
+from src.utils import save_obj
 
 
 @dataclass
@@ -40,10 +40,12 @@ class ModelTraining:
             
             # Save model
             logging.info(f"Saving model at {self.model_training_config.trained_model_path}")
-            joblib.dump(model, self.model_training_config.trained_model_path)
+            save_obj(model, self.model_training_config.trained_model_path)
+            logging.info("Model saved")
             
             return accuracy
                         
         except Exception as e:
             logging.error(f"Error in model training: {str(e)}")
             raise CustomException(e,sys)
+    

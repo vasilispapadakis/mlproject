@@ -32,9 +32,10 @@ class CustomMapper(BaseEstimator, TransformerMixin):
     def transform(self, data):
         data = data.copy()
         for col, mapping in self.mappings.items():
-            data[col] = data[col].map(mapping)
-            if data[col].isnull().any():
-                logging.warning(f"Null values found in column {col}")
+            if col in data.columns:
+                data[col] = data[col].map(mapping)
+                if data[col].isnull().any():
+                    logging.warning(f"Null values found in column {col}")
         data.fillna({col: -2}, inplace=True)
         return data
 
@@ -48,7 +49,7 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
 
     def transform(self, data):
         data = data.copy()
-        data.drop(columns=self.columns, inplace=True)
+        data.drop(columns=self.columns, inplace=True, errors='ignore')
         return data
     
 class DummyEncoder(BaseEstimator, TransformerMixin):

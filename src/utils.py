@@ -17,3 +17,12 @@ def save_obj(obj, path):
     
     except Exception as e:
         raise CustomException(e,sys)
+
+def load_object(path):
+    """ Load object from file """
+    try:
+        with open(path, 'rb') as file:
+            obj = dill.load(file)
+        return obj
+    except Exception as e:
+        raise CustomException(e,sys)

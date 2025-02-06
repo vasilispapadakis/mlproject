@@ -1,6 +1,6 @@
 # Jupyter Notebook to Cloud Deployment: A Learning Journey
 
-This project is a hands-on exploration of transforming a Jupyter notebook into a modular Python project and deploying it on a cloud environment. It focuses not on building the perfect machine learning model but on understanding the process of writing clean, reusable, and deployable code. The notebook I use is from an old project where I only wanted to extract information so almost no care was given into making it presentable and the code efficient.
+This project is a hands-on exploration of transforming a Jupyter notebook into a modular Python project and deploying it on a cloud environment. It focuses not on building the perfect machine learning model but on understanding the process of writing clean, reusable, and deployable code. The notebook I use is from an old project where I only wanted to extract information so almost no care was given into making it presentable and the code efficient. Also things like hyperparameter tuning and finding the best model was not transfered into this project.
 
 This Readme file will be updated as I continue the project.
 
