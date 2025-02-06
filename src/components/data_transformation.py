@@ -8,7 +8,6 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from src.logger import logging
 from src.exception import CustomException
 from src.utils import save_obj
-import joblib
 from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import IterativeImputer
 from sklearn.ensemble import RandomForestRegressor
@@ -36,6 +35,8 @@ class CustomMapper(BaseEstimator, TransformerMixin):
                 data[col] = data[col].map(mapping)
                 if data[col].isnull().any():
                     logging.warning(f"Null values found in column {col}")
+            else:
+                logging.warning(f"Column {col} not found in data")
         data.fillna({col: -2}, inplace=True)
         return data
 
@@ -53,17 +54,22 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
         return data
     
 class DummyEncoder(BaseEstimator, TransformerMixin):
-    """Encodes categorical columns using one-hot encoding"""
     def __init__(self, columns):
         self.columns = columns
+        self.fitted_columns = None
 
     def fit(self, data, y=None):
+        encoded = pd.get_dummies(data, columns=self.columns, drop_first=True)
+        self.fitted_columns = encoded.columns  # Save the column names
         return self
 
     def transform(self, data):
-        data = data.copy()
         data = pd.get_dummies(data, columns=self.columns, drop_first=True)
-        return data
+        for col in self.fitted_columns:
+            if col not in data.columns:
+                data[col] = 0  # Add missing columns with 0
+        return data[self.fitted_columns]  
+
     
 class DataImputation(BaseEstimator, TransformerMixin):
     """Imputes missing values based on the number of unique values"""

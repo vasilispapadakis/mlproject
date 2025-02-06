@@ -16,7 +16,7 @@ class PredictPipeline:
             model = load_object(model_path)
             preprocessor = load_object(preprocessor_path)
             data_processed = preprocessor.transform(data)
-            print(data_processed)
+            data_processed = data_processed.drop(columns=['Loan_Status'])
             prediction = model.predict(data_processed)
             return prediction
         except Exception as e:
@@ -63,3 +63,10 @@ class CustomData:
         except Exception as e:
             logging.error(f"Error in getting data as dataframe: {str(e)}")
             raise CustomException(e, sys)
+
+if __name__ == "__main__":
+    data = pd.read_csv('data/loan-test.csv')
+    data = data.head(1)
+    predict_pipeline = PredictPipeline()
+    prediction = predict_pipeline.predict(data)
+    print(prediction)
