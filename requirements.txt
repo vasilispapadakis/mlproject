@@ -3,5 +3,5 @@ numpy
 seaborn
 dill
 flask
-sci-kit-learn
+scikit-learn
 -e .
