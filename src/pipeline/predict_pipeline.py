@@ -64,9 +64,3 @@ class CustomData:
             logging.error(f"Error in getting data as dataframe: {str(e)}")
             raise CustomException(e, sys)
 
-if __name__ == "__main__":
-    data = pd.read_csv('data/loan-test.csv')
-    data = data.head(1)
-    predict_pipeline = PredictPipeline()
-    prediction = predict_pipeline.predict(data)
-    print(prediction)
